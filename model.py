@@ -33,10 +33,16 @@ class UNET(nn.Module):
             in_channels = feature
 
         # Up part of UNET
-        for feature in reversed:
+        for feature in reversed(features):
             self.ups.append(
                 nn.ConvTranspose2d(
                     feature*2, feature, kernel_size=2, stride=2
                 )
             )
             self.ups.append(DoubleConv(feature*2, feature))
+
+            self.bottleneck = DoubleConv(features[-1], features[-1]*2)
+            self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
+
+    def forward(self, x):
+        skip_connections = []
